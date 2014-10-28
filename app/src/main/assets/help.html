@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>RGB</title>
+    <link rel='shortcut icon' type='image/x-icon' href='img/splash1.png' />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content="color combining game" />
+
+
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet" />
+    	<style>
+		.message-container {
+			overflow: auto;
+			position: absolute;
+			font-weight: bold;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			z-index: 100;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+<div class="message-container">
+<p style='margin:20px;font-size:16px'>The goal of the game is to fill the grid with 15 cyan colored tiles</p>
+<img src='img/win.png' width="80%">
+<p style='margin:20px;font-size:16px'>Primary colors(Red, Green and Blue) combine to form secondary colors(Yellow, Cyan and Magenta)</p>
+<img src='img/combine1.png' width="100%" height="80%">
+<p>Secondary colors combine to give the original primary colors. Cyan colored tiles do not combine</p>
+<img src='img/combine2.png' width="100%" height="80%">
+<p style='margin:20px;font-size:16px'>If you fill the grid with 16 tiles and there are no more possible moves, the game ends</p>
+<img src='img/lose.png' width="80%">
+<p style='margin:20px;font-size:16px'>Swipe left,right, up and down to navigate through the grid</p>
+</div>
+</body>
+</html>

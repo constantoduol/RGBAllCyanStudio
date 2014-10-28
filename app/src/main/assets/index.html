@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>RGB</title>
+    <link rel='shortcut icon' type='image/x-icon' href='img/splash1.png' />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content="color combining game" />
+
+
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet" />
+    <link href="css/rgb.css" rel="stylesheet">
+</head>
+<body>
+    <div id="scores" style="margin-top : 0px;margin-bottom:0px">
+        <span class="score" style="margin-right : 10px">
+            <span>Score</span>
+            <span id="current-score">0</span>
+        </span>
+        <span class="score">
+            <span>Best</span>
+            <span id="best-score">0</span>
+        </span>
+        <a href="#" id="replay-link" title="Restart Game" style="background:lightblue;padding:10px;border-radius:3px;cursor:pointer;margin-left : 10px;">
+            <img src="img/replay.png" width="20" height="20" />
+        </a>
+    </div>
+
+
+
+    <div id="grid" style="overflow : hidden">
+    </div>
+    <div id="game-message">
+
+
+    </div>
+
+
+    <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="js/rgb.js"></script>
+    <script type="text/javascript" src="js/keyboard_input_manager.js"></script>
+    
+    <script type="text/javascript">
+        function init() {
+            setup();
+            var back = localStorage.getItem("background");
+            if (back) {
+                back = back === "original" ? "#F0FFFF" : back;
+                back = back === "random" ? window.grid.randomColor() : back;
+                $("body").css("background", back);
+            }
+            
+            var grid = new Grid();
+            window.grid = grid;
+            grid.init();
+            grid.run();
+            if(window.grid.getDim()[1] > (window.grid.getDim()[0] + 100)){
+                var diff = grid.getDim()[1] - grid.getDim()[0] + 60;
+                diff = diff > 40 ? 40 : diff;
+                var margin = diff/2+"px";
+                //margin = "0px";
+                //put margins because there is enough space since the height is greater than width
+                var scores = $("#scores");
+                scores.css("margin-bottom",margin);
+                scores.css("margin-top",margin);
+            }
+        }
+
+        function setup() {
+            $("#game-message")[0].style.display = "none";
+            var bestScore = localStorage.getItem("best-score");
+            if (bestScore) {
+                bestScore = parseInt(bestScore);
+            }
+            else {
+                bestScore = 0;
+            }
+            $("#best-score").html(bestScore);
+            $("#current-score").html("0");
+            $("#replay-link")[0].addEventListener("click", replay, false);
+        }
+
+        function restart() {
+            window.grid.grid =
+                [[null, null, null, null],
+                 [null, null, null, null],
+                 [null, null, null, null],
+                 [null, null, null, null]];
+            for (var y = 0; y < 4; y++) {
+                for (var x = 0; x < 4; x++) {
+                    window.grid.actuate("transparent", x, y, "init");
+                }
+            }
+            setup();
+            window.grid.motion = true;
+            window.grid.nextTile();
+            window.grid.nextTile();
+            window.grid.cyanTiles = [];
+            window.grid.previousTilesLength = 0;
+            localStorage.removeItem("the-grid");
+            localStorage.setItem("the-grid", JSON.stringify(window.grid.grid));
+        }
+        function replay() {
+            window.grid.confirm("Restart the game?", restart);
+        }
+
+        function showMenu() {
+            var menu = [{
+                label: "Background",
+                options: ["original", "black", "white", "gray", "red", "green", "blue", "yellow", "magenta", "cyan","random"],
+                preset: localStorage.getItem("background")
+            }
+                 /* {
+                     label: "Sound",
+                     options: ["off", "on"],
+                     preset: localStorage.getItem("sound-on")
+                 }
+                {
+                     label: "Music",
+                     options: ["off", "on"],
+                     preset: localStorage.getItem("music-on")
+                 }
+                 */
+            ];
+            window.grid.menuBuilder(menu, "saveSettings");
+        }
+
+        function saveSettings(ids) {
+            var background = $("#" + ids[0]).val();
+            background = background === "original" ? "#F0FFFF" : background;
+            background = background === "random" ? window.grid.randomColor() : background;
+            $("body").css("background", background);
+            //var soundOn = $("#" + ids[1]).val();
+            //var musicOn = $("#" + ids[2]).val();
+            localStorage.setItem("background", background);
+            //localStorage.setItem("sound-on", soundOn);
+            //localStorage.setItem("music-on", musicOn);
+            $('#game-message').css('display', 'none');
+        }
+
+
+        function showHelp() {
+            window.scrollTo(0, 0);
+            var width = window.grid.getDim()[0];
+            var height = window.grid.getDim()[1];
+            var area = $("#game-message");
+            area.css("background", "#F0FFFF");
+            area.html("");
+            var help1 = $("<p style='margin:20px;font-size : 30px'>The goal of the game is to fill the grid with 15 cyan colored tiles</p>");
+            var help1Image = $("<img src='img/win.png' width=" + 0.8 * width + ">");
+            var help2 = $("<p style='margin:20px;font-size : 30px'>Primary colors(Red, Green and Blue) combine to form secondary colors(Yellow, Cyan and Magenta)</p>");
+            var help2Image = $("<img src='img/combine1.png' width=" + width + " height=" + 0.6 * height + ">");
+            var help2P = $("<p style='margin:20px;font-size : 30px'>Secondary colors combine to give the original primary colors. Cyan colored tiles do not combine</p>");
+            var help2PImage = $("<img src='img/combine2.png' width=" + width + " height=" + 0.6 * height + ">");
+            var help3 = $("<p style='margin:20px;font-size : 30px'>If you fill the grid with 16 tiles and there are no more possible moves, the game ends</p>");
+            var help3Image = $("<img src='img/lose.png' width=" + 0.8 * width + ">");
+            var help4 = $("<p style='margin:20px;font-size : 30px'>Swipe left,right, up and down to navigate through the grid</p>");
+            area.append(help1);
+            area.append(help1Image);
+            area.append(help2);
+            area.append(help2Image);
+            area.append(help2P);
+            area.append(help2PImage);
+            area.append(help3);
+            area.append(help3Image);
+            area.append(help4);
+            var buttonDiv = $("<div style='margin-top : 20px;'>");
+            var ok = $("<input type='button' class='btn btn-primary' value='Back to Game' style='width : " + 0.8 * width + "px; margin-bottom:20px;font-size : 30px'>");
+            ok.attr("onclick", "$('#game-message').css('display','none');window.scrollTo(0, 0);");
+            buttonDiv.append(ok);
+            area.append(buttonDiv);
+            area.addClass("message-anim");
+            area.css("display", "block");
+            window.grid.runLater(1000, function () {
+                area.removeClass("message-anim");
+            });
+        };
+
+
+      
+
+        function showAbout() {
+            window.scrollTo(0, 0);
+            var width = window.grid.getDim()[0];
+            var area = $("#game-message");
+            area.css("background", "#F0FFFF");
+            area.html("");
+            var about1 = $("<p style='margin:20px;font-size : 30px'>RGB All Cyan is brought to you by Quest LTD,Kenya</p>");
+            var about2 = $("<p style='margin:20px;font-size : 30px'>This game is inpired by Gabriele Cirulli's 2048.</p>");
+            var about1Image = $("<img src='img/logo.png' width=" + 0.6 * width + "px' style='border-radius:10px;'>");
+            area.append(about1);
+            area.append(about1Image);
+            area.append(about2);
+            
+            var buttonDiv = $("<div style='margin-top : 20px;'>");
+            var ok = $("<input type='button' class='btn btn-primary' value='Back to Game' style='width : " + 0.8 * width + "px;font-size : 30px'>");
+            ok.attr("onclick", "$('#game-message').css('display','none');window.scrollTo(0, 0);");
+            buttonDiv.append(ok);
+            area.append(buttonDiv);
+            area.addClass("message-anim");
+            area.css("display", "block");
+            window.grid.runLater(1000, function () {
+                area.removeClass("message-anim");
+            });
+        };
+       
+
+        function goBack() {
+            $('#game-message').css('display', 'none');
+            window.scrollTo(0, 0);
+        }
+       
+
+        init();
+       
+    </script>
+</body>
+</html>
